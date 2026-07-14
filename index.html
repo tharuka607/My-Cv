@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV HTML Template Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+</head>
+<body>
+
+    <!-- ======== UPLOAD SECTION ======== -->
+    <div id="upload-section" class="section-container">
+        <div class="header-bar">
+            <i class="fas fa-file-code"></i>
+            <h1>CV HTML Template Generator</h1>
+            <p>Upload your CV image & generate a beautiful HTML template</p>
+        </div>
+
+        <div class="upload-area" id="dropZone">
+            <div class="upload-icon">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <h3>Drag & Drop your CV Image here</h3>
+            <p>or click to browse</p>
+            <input type="file" id="cvImageInput" accept="image/*" hidden>
+            <button class="btn-upload" onclick="document.getElementById('cvImageInput').click()">
+                <i class="fas fa-image"></i> Choose Image
+            </button>
+            <div class="supported-formats">
+                Supported: JPG, PNG, JPEG, BMP, WEBP
+            </div>
+        </div>
+
+        <!-- Image Preview -->
+        <div id="preview-container" class="hidden">
+            <h3><i class="fas fa-eye"></i> Image Preview</h3>
+            <div class="preview-wrapper">
+                <img id="imagePreview" alt="CV Preview">
+                <button class="btn-remove" onclick="removeImage()">
+                    <i class="fas fa-times"></i> Remove
+                </button>
+            </div>
+        </div>
+
+        <!-- Template Selection -->
+        <div id="template-selection" class="hidden">
+            <h3><i class="fas fa-palette"></i> Choose Template Style</h3>
+            <div class="template-grid">
+                <div class="template-card active" data-template="modern" onclick="selectTemplate('modern', this)">
+                    <div class="template-preview modern-preview">
+                        <div class="tp-sidebar"></div>
+                        <div class="tp-content">
+                            <div class="tp-line w80"></div>
+                            <div class="tp-line w60"></div>
+                            <div class="tp-line w90"></div>
+                            <div class="tp-line w40"></div>
+                        </div>
+                    </div>
+                    <span>Modern</span>
+                </div>
+                <div class="template-card" data-template="classic" onclick="selectTemplate('classic', this)">
+                    <div class="template-preview classic-preview">
+                        <div class="tp-header-block"></div>
+                        <div class="tp-body">
+                            <div class="tp-line w80"></div>
+                            <div class="tp-line w60"></div>
+                            <div class="tp-line w90"></div>
+                        </div>
+                    </div>
+                    <span>Classic</span>
+                </div>
+                <div class="template-card" data-template="creative" onclick="selectTemplate('creative', this)">
+                    <div class="template-preview creative-preview">
+                        <div class="tp-circle"></div>
+                        <div class="tp-line w60 center"></div>
+                        <div class="tp-two-col">
+                            <div class="tp-col"><div class="tp-line w90"></div></div>
+                            <div class="tp-col"><div class="tp-line w90"></div></div>
+                        </div>
+                    </div>
+                    <span>Creative</span>
+                </div>
+                <div class="template-card" data-template="minimal" onclick="selectTemplate('minimal', this)">
+                    <div class="template-preview minimal-preview">
+                        <div class="tp-line w40 center"></div>
+                        <div class="tp-divider"></div>
+                        <div class="tp-line w80"></div>
+                        <div class="tp-line w60"></div>
+                        <div class="tp-line w90"></div>
+                    </div>
+                    <span>Minimal</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Process Button -->
+        <div id="process-section" class="hidden">
+            <button class="btn-generate" id="generateBtn" onclick="processCV()">
+                <i class="fas fa-magic"></i> Generate CV Template
+            </button>
+        </div>
+
+        <!-- Progress Bar -->
+        <div id="progress-section" class="hidden">
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Initializing OCR...</div>
+                <div class="progress-percentage" id="progressPercent">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== EDIT SECTION ======== -->
+    <div id="edit-section" class="section-container hidden">
+        <div class="header-bar">
+            <i class="fas fa-edit"></i>
+            <h1>Edit Extracted Data</h1>
+            <p>Review and modify the extracted information before generating</p>
+        </div>
+
+        <div class="edit-form">
+            <!-- Personal Info -->
+            <div class="form-group">
+                <h3><i class="fas fa-user"></i> Personal Information</h3>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label>Full Name</label>
+                        <input type="text" id="edit-name" placeholder="John Doe">
+                    </div>
+                    <div class="form-field">
+                        <label>Job Title</label>
+                        <input type="text" id="edit-title" placeholder="Software Engineer">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label>Email</label>
+                        <input type="email" id="edit-email" placeholder="john@example.com">
+                    </div>
+                    <div class="form-field">
+                        <label>Phone</label>
+                        <input type="tel" id="edit-phone" placeholder="+94 77 123 4567">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label>Location</label>
+                        <input type="text" id="edit-location" placeholder="Colombo, Sri Lanka">
+                    </div>
+                    <div class="form-field">
+                        <label>Website / LinkedIn</label>
+                        <input type="text" id="edit-website" placeholder="linkedin.com/in/johndoe">
+                    </div>
+                </div>
+                <div class="form-field full-width">
+                    <label>Profile Photo URL (optional)</label>
+                    <input type="text" id="edit-photo" placeholder="https://example.com/photo.jpg">
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="form-group">
+                <h3><i class="fas fa-align-left"></i> Professional Summary</h3>
+                <div class="form-field full-width">
+                    <textarea id="edit-summary" rows="4" placeholder="A brief professional summary..."></textarea>
+                </div>
+            </div>
+
+            <!-- Experience -->
+            <div class="form-group">
+                <h3><i class="fas fa-briefcase"></i> Work Experience</h3>
+                <div id="experience-container"></div>
+                <button class="btn-add" onclick="addExperience()">
+                    <i class="fas fa-plus"></i> Add Experience
+                </button>
+            </div>
+
+            <!-- Education -->
+            <div class="form-group">
+                <h3><i class="fas fa-graduation-cap"></i> Education</h3>
+                <div id="education-container"></div>
+                <button class="btn-add" onclick="addEducation()">
+                    <i class="fas fa-plus"></i> Add Education
+                </button>
+            </div>
+
+            <!-- Skills -->
+            <div class="form-group">
+                <h3><i class="fas fa-tools"></i> Skills</h3>
+                <div class="form-field full-width">
+                    <label>Skills (comma separated)</label>
+                    <input type="text" id="edit-skills" placeholder="JavaScript, Python, React, Node.js">
+                </div>
+            </div>
+
+            <!-- Languages -->
+            <div class="form-group">
+                <h3><i class="fas fa-language"></i> Languages</h3>
+                <div class="form-field full-width">
+                    <label>Languages (comma separated)</label>
+                    <input type="text" id="edit-languages" placeholder="English, Sinhala, Tamil">
+                </div>
+            </div>
+
+            <!-- Extracted Raw Text -->
+            <div class="form-group">
+                <h3><i class="fas fa-file-alt"></i> Raw Extracted Text</h3>
+                <div class="form-field full-width">
+                    <textarea id="edit-rawtext" rows="6" readonly></textarea>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn-back" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <button class="btn-generate" onclick="generateFinalCV()">
+                    <i class="fas fa-code"></i> Generate HTML Template
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== OUTPUT SECTION ======== -->
+    <div id="output-section" class="section-container hidden">
+        <div class="header-bar">
+            <i class="fas fa-check-circle"></i>
+            <h1>Your CV Template is Ready!</h1>
+            <p>Preview, copy the code, or download the HTML file</p>
+        </div>
+
+        <div class="output-actions">
+            <button class="btn-action" onclick="showPreview()">
+                <i class="fas fa-eye"></i> Preview
+            </button>
+            <button class="btn-action" onclick="copyCode()">
+                <i class="fas fa-copy"></i> Copy HTML
+            </button>
+            <button class="btn-action" onclick="downloadHTML()">
+                <i class="fas fa-download"></i> Download HTML
+            </button>
+            <button class="btn-action" onclick="downloadPDF()">
+                <i class="fas fa-file-pdf"></i> Print / PDF
+            </button>
+            <button class="btn-action secondary" onclick="startOver()">
+                <i class="fas fa-redo"></i> Start Over
+            </button>
+        </div>
+
+        <!-- Code Display -->
+        <div class="code-container">
+            <div class="code-header">
+                <span>Generated HTML Code</span>
+                <button onclick="copyCode()" title="Copy"><i class="fas fa-copy"></i></button>
+            </div>
+            <pre><code id="generatedCode"></code></pre>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="preview-frame-container">
+            <h3><i class="fas fa-desktop"></i> Live Preview</h3>
+            <iframe id="previewFrame" class="preview-frame"></iframe>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Copied!</span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
